@@ -1,0 +1,3 @@
+sandbox:
+  hostname: sandbox
+  ip: secrets.devices.sandbox.ip
