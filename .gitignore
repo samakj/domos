@@ -1,0 +1,23 @@
+# Python venv folders
+/**/venv
+/**/bin
+/**/include
+/**/lib
+/**/lib64
+
+# Byte-compiled / optimized / DLL files
+.idea/
+__pycache__/
+.mypy_cache/
+*.py[cod]
+
+# Frontend build/package folders
+node_modules
+build
+
+# Certificates
+/**/*.pem
+/**/*.crt
+/**/*.key
+/**/*.srl
+/**/*.csr
