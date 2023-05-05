@@ -1,5 +1,7 @@
 import click
 
+from devices import devices
+
 
 @click.group()
 def cli() -> None:
@@ -9,3 +11,6 @@ def cli() -> None:
 @cli.command()
 def echo() -> None:
     print("Hello world")
+
+
+cli.add_command(cmd=devices)
