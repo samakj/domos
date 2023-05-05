@@ -1,5 +1,7 @@
-credentials:
-  - ssid: Patty
+networks:
+  purley_park:
+    ssid: Patty
     password: secrets.users.wifi.patty.password
-  - ssid: VM1410613
+  the_vale:
+    ssid: VM1410613
     password: secrets.users.wifi.VM1410613.password

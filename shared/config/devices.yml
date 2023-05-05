@@ -1,3 +1,4 @@
 sandbox:
   hostname: sandbox
   ip: secrets.devices.sandbox.ip
+  ota_password: secrets.devices.sandbox.ota_password

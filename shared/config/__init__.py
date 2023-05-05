@@ -1,6 +1,7 @@
 import os
+from pathlib import Path
 import yaml
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from .models.devices import DevicesConfig
 from .models.location import LocationConfig
@@ -50,6 +51,82 @@ class _Config:
         with open(Config.get_file_path("secrets.yml")) as file:
             secrets = yaml.load(file, Loader=yaml.FullLoader)
             return Config.flatten_dict(obj=secrets, prefix="secrets")
+
+    def inject_config_into_template(
+        self,
+        config: dict[str, Any],
+        input_path: Union[Path, str],
+        output_path: Union[Path, str],
+        template_prefix: str = "",
+        template_suffix: str = "",
+        key_prefix: Optional[str] = None,
+    ) -> None:
+        output_text = ""
+
+        if not Path(input_path).exists():
+            raise ValueError(f"Path does not exist: {input_path}")
+
+        with open(file=input_path, mode="r") as input_file:
+            output_text = input_file.read()
+
+        for key, value in Config.flatten_dict(config).items():
+            output_text = output_text.replace(
+                f"{template_prefix}"
+                + f"{f'{key_prefix}.' if key_prefix is not None else ''}{key}"
+                + f"{template_suffix}",
+                str(value),
+            )
+
+        with open(file=output_path, mode="w") as output_file:
+            output_file.write(output_text)
+
+    def inject_all_configs_into_template(
+        self,
+        input_path: Union[Path, str],
+        output_path: Union[Path, str],
+        template_prefix: str = "",
+        template_suffix: str = "",
+        extra_config: dict[str, Any] = {},
+    ) -> None:
+        self.inject_config_into_template(
+            config=self.devices.dict(),
+            input_path=input_path,
+            output_path=output_path,
+            template_prefix=template_prefix,
+            template_suffix=template_suffix,
+            key_prefix="devices",
+        )
+        self.inject_config_into_template(
+            config=self.location.dict(),
+            input_path=output_path,
+            output_path=output_path,
+            template_prefix=template_prefix,
+            template_suffix=template_suffix,
+            key_prefix="location",
+        )
+        self.inject_config_into_template(
+            config=self.ntp.dict(),
+            input_path=output_path,
+            output_path=output_path,
+            template_prefix=template_prefix,
+            template_suffix=template_suffix,
+            key_prefix="ntp",
+        )
+        self.inject_config_into_template(
+            config=self.wifi.dict(),
+            input_path=output_path,
+            output_path=output_path,
+            template_prefix=template_prefix,
+            template_suffix=template_suffix,
+            key_prefix="wifi",
+        )
+        self.inject_config_into_template(
+            config=extra_config,
+            input_path=output_path,
+            output_path=output_path,
+            template_prefix=template_prefix,
+            template_suffix=template_suffix,
+        )
 
     @property
     def devices(self) -> DevicesConfig:

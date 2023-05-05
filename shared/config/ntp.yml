@@ -1,5 +1,6 @@
 servers:
-  - uk0.pool.ntp.org
-  - uk1.pool.ntp.org
-  - uk2.pool.ntp.org
-  - uk3.pool.ntp.org
+  uk: uk.pool.ntp.org
+  uk0: uk0.pool.ntp.org
+  uk1: uk1.pool.ntp.org
+  uk2: uk2.pool.ntp.org
+  uk3: uk3.pool.ntp.org
