@@ -5,7 +5,9 @@
 
 #include "Logger/Logger.h"
 #include "Time/Time.h"
+#include "Utils/Utils.h"
+#include "Wifi/Wifi.h"
 
-namespace domos {};
+namespace domos {}; // namespace domos
 
 #endif
