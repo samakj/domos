@@ -16,7 +16,7 @@ unsigned long domos::Time::millisSince(unsigned long start) {
 
 std::string domos::Time::getIsoTimestamp() {
   if (!domos::Time::NTP::isConnected())
-    return domos::Time::TIMESTAMP_NULL_VALUE;
+    return "";
 
   char buffer[23];
   time_t tm = time(nullptr);
@@ -70,14 +70,14 @@ void domos::Time::loop() {
     domos::Time::lastUptimeUpdate = now;
   }
 
-  domos::Time::NTPL::loop();
+  domos::Time::NTP::loop();
 }
 
 // NTP
 
 std::string domos::Time::NTP::server = "uk.pool.ntp.org";
 uint16_t domos::Time::NTP::maxWait = 20000;
-std::vector<domos::Time::NTP::ConnectCallback> domos::Time::NTP::connectCallbacks = {};
+domos::Time::NTP::connect_callback_t domos::Time::NTP::connectCallback = nullptr;
 bool domos::Time::NTP::_isConnecting = false;
 
 bool domos::Time::NTP::isConnecting() { return domos::Time::NTP::_isConnecting; };
@@ -88,8 +88,8 @@ void domos::Time::NTP::setServer(std::string server) { domos::Time::NTP::server 
 
 void domos::Time::NTP::setMaxWait(uint16_t maxWait) { domos::Time::NTP::maxWait = maxWait; };
 
-void domos::Time::NTP::addConnectCallback(domos::Time::NTP::ConnectCallback callback) {
-  domos::Time::NTP::connectCallbacks.push_back(callback);
+void domos::Time::NTP::setConnectCallback(domos::Time::NTP::connect_callback_t callback) {
+  domos::Time::NTP::connectCallback = callback;
 };
 
 void domos::Time::NTP::connect(bool force) {
@@ -113,8 +113,8 @@ void domos::Time::NTP::loop() {
         domos::Time::getIsoTimestamp().c_str()
     );
 
-    for (domos::Time::NTP::ConnectCallback callback : domos::Time::NTP::connectCallbacks)
-      callback();
+    if (domos::Time::NTP::connectCallback != nullptr)
+      domos::Time::NTP::connectCallback();
 
     domos::Time::NTP::_isConnecting = false;
   }
