@@ -29,7 +29,7 @@ std::string domos::Logger::serialise(domos::Logger::LogLevel level) {
     return "warn";
   if (level == domos::Logger::ERROR)
     return "error";
-  return "unknown";
+  return nullptr;
 };
 
 std::string domos::Logger::serialise(std::vector<std::string> tags) {

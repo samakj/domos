@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 #include "Logger/Logger.h"
+#include "Sensors/Sensors.h"
 #include "Time/Time.h"
 #include "Utils/Utils.h"
 #include "Wifi/Wifi.h"

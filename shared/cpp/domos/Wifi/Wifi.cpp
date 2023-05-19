@@ -196,7 +196,7 @@ std::string domos::Wifi::serialise(WifiStrength strength) {
     return "very weak";
   if (strength == domos::Wifi::WifiStrength::NOT_CONNECTED)
     return "not connected";
-  return "";
+  return nullptr;
 };
 
 std::string domos::Wifi::serialise(byte *mac) {
