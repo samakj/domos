@@ -15,12 +15,20 @@
 #include <Utils/Utils.h>
 
 namespace domos::Wifi {
+enum WifiStrength { VERY_STRONG, STRONG, GOOD, OKAY, WEAK, VERY_WEAK, NOT_CONNECTED };
+
 struct credentials_t {
   std::string ssid;
   std::string password;
 };
 
-enum WifiStrength { VERY_STRONG, STRONG, GOOD, OKAY, WEAK, VERY_WEAK, NOT_CONNECTED };
+struct info_t {
+  std::string mac;
+  std::string ip;
+  std::string hostname;
+  std::string ssid;
+  WifiStrength strength;
+};
 
 typedef std::function<void(std::string ssid)> connect_callback_t;
 typedef std::function<void()> disconnect_callback_t;
@@ -52,6 +60,7 @@ std::string getIPAddress();
 std::string getHostname();
 std::string getSSID();
 WifiStrength getStrength();
+info_t getInfo();
 
 credentials_t *getStrongestNetwork(std::vector<credentials_t *> networks);
 
@@ -70,6 +79,7 @@ std::string serialise(credentials_t *credentials);
 std::string serialise(WifiStrength strength);
 std::string serialise(byte *mac);
 std::string serialise(IPAddress ip);
+std::string serialise(info_t *info);
 
 void connect(credentials_t *network, std::string hostname = "", std::string ip = "");
 void connect(std::vector<credentials_t *> networks, std::string hostname = "", std::string ip = "");

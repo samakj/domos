@@ -45,6 +45,13 @@ domos::Wifi::WifiStrength domos::Wifi::getStrength() {
   return domos::Wifi::categoriseRSSI(WiFi.RSSI());
 }
 
+domos::Wifi::info_t domos::Wifi::getInfo() {
+  return {
+      domos::Wifi::getMACAddress(), domos::Wifi::getIPAddress(), domos::Wifi::getHostname(),
+      domos::Wifi::getSSID(),       domos::Wifi::getStrength(),
+  };
+}
+
 domos::Wifi::credentials_t *
 domos::Wifi::getStrongestNetwork(std::vector<domos::Wifi::credentials_t *> _networks) {
   if (!_networks.size()) {
@@ -203,6 +210,33 @@ std::string domos::Wifi::serialise(IPAddress ip) {
   sprintf(buffer, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
   return (std::string)buffer;
 };
+
+std::string domos::Wifi::serialise(info_t *info) {
+  std::string _info = "{";
+
+  _info += "\"mac\":\"";
+  _info += info->mac;
+  _info += "\",";
+
+  _info += "\"ip\":\"";
+  _info += info->ip;
+  _info += "\",";
+
+  _info += "\"hostname\":\"";
+  _info += info->hostname;
+  _info += "\",";
+
+  _info += "\"ssid\":\"";
+  _info += info->ssid;
+  _info += "\",";
+
+  _info += "\"strength\":\"";
+  _info += domos::Wifi::serialise(info->strength);
+  _info += "\"";
+
+  _info += "}";
+  return _info;
+}
 
 void domos::Wifi::connect(
     domos::Wifi::credentials_t *_network, std::string hostname, std::string ip
