@@ -49,6 +49,7 @@ extern std::string server;
 extern uint16_t maxWait;
 extern connect_callback_t connectCallback;
 extern bool _isConnecting;
+extern std::vector<std::string> _logTags;
 
 bool isConnecting();
 bool isConnected();

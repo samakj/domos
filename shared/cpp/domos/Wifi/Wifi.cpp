@@ -10,6 +10,7 @@ bool domos::Wifi::_isConnecting = false;
 domos::Wifi::WifiStrength domos::Wifi::_strength = domos::Wifi::WifiStrength::NOT_CONNECTED;
 uint32_t domos::Wifi::_connectionAttemptStart = 0;
 uint32_t domos::Wifi::_lastStrengthUpdate = 0;
+std::vector<std::string> domos::Wifi::_logTags = {"Wifi"};
 
 bool domos::Wifi::isConnecting() { return domos::Wifi::_isConnecting; }
 
@@ -47,16 +48,20 @@ domos::Wifi::WifiStrength domos::Wifi::getStrength() {
 domos::Wifi::credentials_t *
 domos::Wifi::getStrongestNetwork(std::vector<domos::Wifi::credentials_t *> _networks) {
   if (!_networks.size()) {
-    domos::Logger::error("Empty list passed to domos::Wifi::getStrongestNetwork");
+    domos::Logger::error(
+        domos::Wifi::_logTags, "Empty list passed to domos::Wifi::getStrongestNetwork"
+    );
     return nullptr;
   }
 
-  domos::Logger::infof("Finding strongest of %d networks...\n", _networks.size());
-  domos::Logger::debug("Scanning local networks...");
+  domos::Logger::infof(
+      domos::Wifi::_logTags, "Finding strongest of %d networks...\n", _networks.size()
+  );
+  domos::Logger::debug(domos::Wifi::_logTags, "Scanning local networks...");
 
   uint8_t networkCount = WiFi.scanNetworks();
 
-  domos::Logger::debugf("%d networks found in range.\n", networkCount);
+  domos::Logger::debugf(domos::Wifi::_logTags, "%d networks found in range.\n", networkCount);
 
   domos::Wifi::credentials_t *strongest = nullptr;
   float strengthOfStrongest = 0.0f;
@@ -66,7 +71,8 @@ domos::Wifi::getStrongestNetwork(std::vector<domos::Wifi::credentials_t *> _netw
       if (_network->ssid == WiFi.SSID(i).c_str()) {
         float _strength = WiFi.RSSI(i);
         domos::Logger::debugf(
-            "    '%s' network found with RSSI %.1f - %s.\n", _network->ssid.c_str(), _strength,
+            domos::Wifi::_logTags, "    '%s' network found with RSSI %.1f - %s.\n",
+            _network->ssid.c_str(), _strength,
             domos::Wifi::serialise(domos::Wifi::categoriseRSSI(_strength)).c_str()
         );
         if (_strength > strengthOfStrongest) {
@@ -76,9 +82,13 @@ domos::Wifi::getStrongestNetwork(std::vector<domos::Wifi::credentials_t *> _netw
       }
 
   if (strongest == nullptr)
-    domos::Logger::warn("None of the provided credentials_t matched found local networks.");
+    domos::Logger::warn(
+        domos::Wifi::_logTags, "None of the provided credentials_t matched found local networks."
+    );
   else
-    domos::Logger::infof("'%s' found as the strongest.\n", strongest->ssid.c_str());
+    domos::Logger::infof(
+        domos::Wifi::_logTags, "'%s' found as the strongest.\n", strongest->ssid.c_str()
+    );
 
   return strongest;
 }
@@ -86,10 +96,14 @@ domos::Wifi::getStrongestNetwork(std::vector<domos::Wifi::credentials_t *> _netw
 void domos::Wifi::setHostname(std::string hostname) {
   domos::Wifi::targetHostname = hostname;
   if (!domos::Wifi::isConnected()) {
-    domos::Logger::infof("Setting hostname to: ", domos::Wifi::targetHostname.c_str());
+    domos::Logger::infof(
+        domos::Wifi::_logTags, "Setting hostname to: ", domos::Wifi::targetHostname.c_str()
+    );
     WiFi.setHostname(domos::Wifi::targetHostname.c_str());
   } else
-    domos::Logger::warn("Hostname changes will only take effect on wifi re-connect.");
+    domos::Logger::warn(
+        domos::Wifi::_logTags, "Hostname changes will only take effect on wifi re-connect."
+    );
 };
 
 void domos::Wifi::setIPAddress(std::string ip) {
@@ -99,7 +113,9 @@ void domos::Wifi::setIPAddress(std::string ip) {
     std::vector<std::string> ipSplit = domos::Utils::string::split(domos::Wifi::targetIp, '.');
 
     if (ipSplit.size() != 4) {
-      domos::Logger::errorf("Invalid IP set for wifi: %s\n", domos::Wifi::targetIp.c_str());
+      domos::Logger::errorf(
+          domos::Wifi::_logTags, "Invalid IP set for wifi: %s\n", domos::Wifi::targetIp.c_str()
+      );
       return;
     }
 
@@ -109,10 +125,14 @@ void domos::Wifi::setIPAddress(std::string ip) {
     IPAddress dns1(8, 8, 8, 8);
     IPAddress dns2(4, 4, 4, 4);
 
-    domos::Logger::infof("Setting IP to: %s\n", domos::Wifi::targetIp.c_str());
+    domos::Logger::infof(
+        domos::Wifi::_logTags, "Setting IP to: %s\n", domos::Wifi::targetIp.c_str()
+    );
     WiFi.config(localIp, gateway, subnet, dns1, dns2);
   } else
-    domos::Logger::warn("IP changes will only take effect on wifi re-connect.");
+    domos::Logger::warn(
+        domos::Wifi::_logTags, "IP changes will only take effect on wifi re-connect."
+    );
 };
 
 void domos::Wifi::setMaxWait(uint16_t maxWait) { domos::Wifi::maxWait = maxWait; };
@@ -208,7 +228,7 @@ void domos::Wifi::connect(
   if (ip.size())
     domos::Wifi::setIPAddress(ip);
 
-  domos::Logger::infof("Wifi connecting to: %s\n", strongest->ssid.c_str());
+  domos::Logger::infof(domos::Wifi::_logTags, "Wifi connecting to: %s\n", strongest->ssid.c_str());
   domos::Wifi::_isConnecting = true;
   domos::Wifi::_connectionAttemptStart = millis();
   domos::Wifi::_lastConnectionMessage = millis();
@@ -219,7 +239,7 @@ void domos::Wifi::reconnect() {
   if (domos::Wifi::networks.size())
     domos::Wifi::connect(domos::Wifi::networks);
   else
-    domos::Logger::error("No wifi networks to reconnect to.");
+    domos::Logger::error(domos::Wifi::_logTags, "No wifi networks to reconnect to.");
 }
 
 void domos::Wifi::loop() {
@@ -232,11 +252,11 @@ void domos::Wifi::loop() {
       std::string ssid = domos::Wifi::getSSID();
 
       domos::Logger::infof(
-          "Wifi connected to %s, with a %s connection.\n", ssid.c_str(),
+          domos::Wifi::_logTags, "Wifi connected to %s, with a %s connection.\n", ssid.c_str(),
           domos::Wifi::serialise(_strength).c_str()
       );
-      domos::Logger::infof("IP:   %s\n", ip.c_str());
-      domos::Logger::infof("MAC:  %s\n", mac.c_str());
+      domos::Logger::infof(domos::Wifi::_logTags, "IP:   %s\n", ip.c_str());
+      domos::Logger::infof(domos::Wifi::_logTags, "MAC:  %s\n", mac.c_str());
 
       if (domos::Wifi::connectCallback != nullptr)
         domos::Wifi::connectCallback(ssid);
@@ -245,15 +265,18 @@ void domos::Wifi::loop() {
       if (domos::Wifi::strengthChangeCallback != nullptr)
         domos::Wifi::strengthChangeCallback(_strength);
     } else if (domos::Time::millisSince(domos::Wifi::_connectionAttemptStart) > domos::Wifi::maxWait) {
-      domos::Logger::warn("Max wait exceeded trying to connect wifi, aborting and trying again.");
+      domos::Logger::warn(
+          domos::Wifi::_logTags,
+          "Max wait exceeded trying to connect wifi, aborting and trying again."
+      );
       domos::Wifi::reconnect();
     } else if (domos::Time::millisSince(domos::Wifi::_lastConnectionMessage) > 10000) {
       float dt = domos::Time::millisSince(domos::Wifi::_lastConnectionMessage) / 1000.0f;
-      domos::Logger::infof("Wifi connecting %.1fs...\n", dt);
+      domos::Logger::infof(domos::Wifi::_logTags, "Wifi connecting %.1fs...\n", dt);
       domos::Wifi::_lastConnectionMessage = millis();
     }
   } else if (!domos::Wifi::isConnected()) {
-    domos::Logger::warnf("Wifi disconnected, trying to reconnect");
+    domos::Logger::warnf(domos::Wifi::_logTags, "Wifi disconnected, trying to reconnect");
     if (domos::Wifi::disconnectCallback != nullptr)
       domos::Wifi::disconnectCallback();
     domos::Wifi::reconnect();
@@ -263,7 +286,8 @@ void domos::Wifi::loop() {
       domos::Wifi::WifiStrength strength = domos::Wifi::getStrength();
       if (strength != domos::Wifi::_strength) {
         domos::Logger::infof(
-            "Wifi strength changed from %s to %s\n", domos::Wifi::_strength, strength
+            domos::Wifi::_logTags, "Wifi strength changed from %s to %s\n", domos::Wifi::_strength,
+            strength
         );
         domos::Wifi::_strength = strength;
         domos::Wifi::strengthChangeCallback(domos::Wifi::_strength);

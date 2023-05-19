@@ -79,6 +79,7 @@ std::string domos::Time::NTP::server = "uk.pool.ntp.org";
 uint16_t domos::Time::NTP::maxWait = 20000;
 domos::Time::NTP::connect_callback_t domos::Time::NTP::connectCallback = nullptr;
 bool domos::Time::NTP::_isConnecting = false;
+std::vector<std::string> domos::Time::NTP::_logTags = {"NTP"};
 
 bool domos::Time::NTP::isConnecting() { return domos::Time::NTP::_isConnecting; };
 
@@ -94,9 +95,11 @@ void domos::Time::NTP::setConnectCallback(domos::Time::NTP::connect_callback_t c
 
 void domos::Time::NTP::connect(bool force) {
   if (!domos::Wifi::isConnected())
-    domos::Logger::warn("No internet connection, skiping NTP.");
+    domos::Logger::warn(domos::Time::NTP::_logTags, "No internet connection, skiping NTP.");
   else if (force || (!domos::Time::NTP::isConnecting() && !domos::Time::NTP::isConnected())) {
-    domos::Logger::infof("Connecting NTP to %s\n", domos::Time::NTP::server.c_str());
+    domos::Logger::infof(
+        domos::Time::NTP::_logTags, "Connecting NTP to %s\n", domos::Time::NTP::server.c_str()
+    );
     domos::Time::NTP::_isConnecting = true;
     configTime(0, 0, domos::Time::NTP::server.c_str());
   }
@@ -109,8 +112,8 @@ void domos::Time::NTP::loop() {
 
   if (domos::Time::NTP::isConnected() && domos::Time::NTP::isConnecting()) {
     domos::Logger::infof(
-        "Synced with '%s'. Time: %s.\n", domos::Time::NTP::server.c_str(),
-        domos::Time::getIsoTimestamp().c_str()
+        domos::Time::NTP::_logTags, "Synced with '%s'. Time: %s.\n",
+        domos::Time::NTP::server.c_str(), domos::Time::getIsoTimestamp().c_str()
     );
 
     if (domos::Time::NTP::connectCallback != nullptr)

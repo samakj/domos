@@ -43,6 +43,7 @@ extern WifiStrength _strength;
 extern uint32_t _connectionAttemptStart;
 extern uint32_t _lastConnectionMessage;
 extern uint32_t _lastStrengthUpdate;
+extern std::vector<std::string> _logTags;
 
 bool isConnecting();
 bool isConnected();
