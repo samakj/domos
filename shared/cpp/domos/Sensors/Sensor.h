@@ -10,6 +10,16 @@
 
 #include <Utils/Utils.h>
 
+#define GROUND 0xF0
+#define POWER_3V3 0xF1
+#define POWER_5V 0xF2
+#define INPUT_OUTPUT 0xF3
+
+#define PIN_GND 0xF0
+#define PIN_3V3 0xF1
+#define PIN_5V 0xF2
+#define PIN_RST 0xF3
+
 namespace domos::Sensors {
 enum Metric { TEMPERATURE, HUMIDITY, OPEN, POWER, VOLTAGE, CURRENT, ON };
 
@@ -24,6 +34,11 @@ struct pin_t {
   uint8_t number;
   uint8_t mode;
 };
+
+extern pin_t pinGND;
+extern pin_t pin3V3;
+extern pin_t pin5V;
+extern pin_t pinRST;
 
 enum Model { DHT22, DS18B20, SWITCH };
 
@@ -42,12 +57,15 @@ public:
   std::unordered_map<uint8_t, pin_t *> getPins();
 
   void setMeasurement(uint8_t id, measurement_t<void *> *measurement);
-  void setPin(uint8_t id, pin_t *pin);
+  void setPin(uint8_t number, uint8_t mode);
+  void setPin(pin_t *pin);
 
   void applyPinModes();
 
   std::string serialise();
 };
+
+bool isValidPinMode(uint8_t mode);
 
 std::string serialise(Metric metric);
 std::string serialise(std::vector<std::string> tags);

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "DHT22.h"
 #include "Sensor.h"
 
 namespace domos::Sensors {}

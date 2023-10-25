@@ -1,5 +1,10 @@
 #include "Sensor.h"
 
+domos::Sensors::pin_t domos::Sensors::pinGND = {PIN_GND, GROUND};
+domos::Sensors::pin_t domos::Sensors::pin3V3 = {PIN_3V3, POWER_3V3};
+domos::Sensors::pin_t domos::Sensors::pin5V = {PIN_5V, POWER_5V};
+domos::Sensors::pin_t domos::Sensors::pinRST = {PIN_RST, OUTPUT};
+
 domos::Sensors::Sensor::Sensor(uint8_t _id, domos::Sensors::Model _model)
     : id(_id), model(_model), measurements({}), pins({}) {}
 
@@ -24,14 +29,60 @@ void domos::Sensors::Sensor::setMeasurement(
   this->measurements[id] = measurement;
 };
 
-void domos::Sensors::Sensor::setPin(uint8_t id, domos::Sensors::pin_t *pin) {
-  this->pins[id] = pin;
+void domos::Sensors::Sensor::setPin(uint8_t number, uint8_t mode) {
+  domos::Sensors::pin_t *pin = new domos::Sensors::pin_t;
+  pin->number = number;
+  pin->mode = mode;
+  domos::Sensors::Sensor::setPin(pin);
 };
 
+void domos::Sensors::Sensor::setPin(domos::Sensors::pin_t *pin) { this->pins[pin->number] = pin; };
+
 void domos::Sensors::Sensor::applyPinModes() {
-  for (auto &it : this->pins) {
-    pinMode(it.second->number, it.second->mode);
+  for (auto &it : this->pins)
+    if (domos::Sensors::isValidPinMode(it.second->mode))
+      pinMode(it.second->number, it.second->mode);
+};
+
+bool domos::Sensors::isValidPinMode(uint8_t mode) {
+  if (mode == OUTPUT) {
+    return true;
+  } else if (mode == INPUT) {
+    return true;
+#ifdef OUTPUT_OPEN_DRAIN
+  } else if (mode == OUTPUT_OPEN_DRAIN) {
+    return true;
+#endif
+#ifdef INPUT_PULLUP
+  } else if (mode == INPUT_PULLUP) {
+    return true;
+#endif
+#ifdef INPUT_PULLDOWN
+  } else if (mode == INPUT_PULLDOWN) {
+    return true;
+#endif
+#ifdef PULLUP
+  } else if (mode == PULLUP) {
+    return true;
+#endif
+#ifdef PULLDOWN
+  } else if (mode == PULLDOWN) {
+    return true;
+#endif
+#ifdef OPEN_DRAIN
+  } else if (mode == OPEN_DRAIN) {
+    return true;
+#endif
+#ifdef OUTPUT_OPEN_DRAIN
+  } else if (mode == OUTPUT_OPEN_DRAIN) {
+    return true;
+#endif
+#ifdef ANALOG
+  } else if (mode == ANALOG) {
+    return true;
+#endif
   }
+  return false;
 };
 
 std::string domos::Sensors::serialise(Metric metric) {
@@ -62,9 +113,18 @@ std::string domos::Sensors::serialise(std::vector<std::string> tags) {
 std::string domos::Sensors::serialise(domos::Sensors::pin_t *pin) {
   std::string _pin = "{";
 
-  _pin += "\"number\":";
-  _pin += pin->number;
-  _pin += ",";
+  _pin += "\"number\":\"";
+  if (pin->number == PIN_GND)
+    _pin += "gnd";
+  if (pin->number == PIN_3V3)
+    _pin += "3v3";
+  if (pin->number == PIN_5V)
+    _pin += "5v";
+  if (pin->number == PIN_RST)
+    _pin += "rst";
+  else
+    _pin += pin->number;
+  _pin += "\",";
 
   _pin += "\"value\":";
 
@@ -72,8 +132,46 @@ std::string domos::Sensors::serialise(domos::Sensors::pin_t *pin) {
     _pin += "\"output\"";
   } else if (pin->mode == INPUT) {
     _pin += "\"input\"";
+  } else if (pin->mode == GROUND) {
+    _pin += "\"ground\"";
+  } else if (pin->mode == POWER_3V3) {
+    _pin += "\"3v3\"";
+  } else if (pin->mode == POWER_5V) {
+    _pin += "\"5v\"";
+  } else if (pin->mode == INPUT_OUTPUT) {
+    _pin += "\"input output\"";
+#ifdef OUTPUT_OPEN_DRAIN
+  } else if (pin->mode == OUTPUT_OPEN_DRAIN) {
+    _pin += "\"output open drain\"";
+#endif
+#ifdef INPUT_PULLUP
   } else if (pin->mode == INPUT_PULLUP) {
-    _pin += "\"input_pullup\"";
+    _pin += "\"input pull up\"";
+#endif
+#ifdef INPUT_PULLDOWN
+  } else if (pin->mode == INPUT_PULLDOWN) {
+    _pin += "\"input pull down\"";
+#endif
+#ifdef PULLUP
+  } else if (pin->mode == PULLUP) {
+    _pin += "\"pullup\"";
+#endif
+#ifdef PULLDOWN
+  } else if (pin->mode == PULLDOWN) {
+    _pin += "\"pulldown\"";
+#endif
+#ifdef OPEN_DRAIN
+  } else if (pin->mode == OPEN_DRAIN) {
+    _pin += "\"open drain\"";
+#endif
+#ifdef OUTPUT_OPEN_DRAIN
+  } else if (pin->mode == OUTPUT_OPEN_DRAIN) {
+    _pin += "\"output open drain\"";
+#endif
+#ifdef ANALOG
+  } else if (pin->mode == ANALOG) {
+    _pin += "\"analog\"";
+#endif
   } else {
     _pin += "null";
   }
